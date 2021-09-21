@@ -1,0 +1,25 @@
+{
+    "name": "twin-elements/crud-bundle",
+    "description": "Implement crud for CMS Jelllinek",
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Władysław Dudko",
+            "email": "w.dudko@jellinek.pl"
+        }
+    ],
+    "require": {
+        "php": "^7.1",
+        "symfony/framework-bundle": "^4.4",
+        "twin-elements/admin-bundle": "^1.0"
+    },
+    "require-dev": {
+        "symfony/maker-bundle": "^1.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "TwinElements\\CrudBundle\\": "src/"
+        }
+    }
+}
