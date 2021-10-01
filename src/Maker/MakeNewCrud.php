@@ -23,6 +23,7 @@ use Symfony\Component\Validator\Validation;
 use Symfony\Bundle\MakerBundle\Validator;
 use Doctrine\Common\Inflector\Inflector as LegacyInflector;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * @author Władysław Dudko <w.dudko@jellinek.pl>
@@ -30,10 +31,12 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 final class MakeNewCrud extends AbstractMaker
 {
     private $doctrineHelper;
+    private $projectDir;
 
-    public function __construct(DoctrineHelper $doctrineHelper)
+    public function __construct(DoctrineHelper $doctrineHelper, string $projectDir)
     {
         $this->doctrineHelper = $doctrineHelper;
+        $this->projectDir = $projectDir;
     }
 
     public static function getCommandName(): string
@@ -132,10 +135,63 @@ final class MakeNewCrud extends AbstractMaker
 
         $routeName = Str::asRouteName($controllerClassDetails->getRelativeNameWithoutSuffix());
         $templatesPath = Str::asFilePath($controllerClassDetails->getRelativeNameWithoutSuffix());
-echo __DIR__.'../templates/skeleton/crud/controller/Controller.tpl.php';
+
+        // ROLES
+        $roleClassDetails = $generator->createClassNameDetails(
+            $relativeEntityNameWithoutSuffix . 'Roles',
+            'Security\\',
+            'Roles'
+        );
+
+        $generator->generateClass(
+            $roleClassDetails->getFullName(),
+            __DIR__ . '/../templates/skeleton/security/Roles.tpl.php',
+            [
+                'bounded_full_class_name' => $entityClassDetails->getFullName(),
+                'bounded_class_name' => $entityClassDetails->getShortName(),
+                'entity_full_class_name' => $entityClassDetails->getFullName(),
+                'entity_var_singular' => $entityVarSingular,
+            ]
+        );
+
+        $servicesYaml = Yaml::parseFile($this->projectDir . '/config/services.yaml');
+
+        $rolesYaml = [
+            'tags' => [
+                [
+                    'name' => 'twin_elements.role',
+                    'priority' => 0
+                ]
+            ]
+        ];
+
+        $servicesYaml['services']["App\Security\\" . $entityClassDetails->getShortName() . "Roles"] = $rolesYaml;
+        file_put_contents($this->projectDir . '/config/services.yaml', Yaml::dump($servicesYaml, 4));
+        // END ROLES
+        // VOTER
+        $voterClassDetails = $generator->createClassNameDetails(
+            $relativeEntityNameWithoutSuffix . 'Voter',
+            'Security\\',
+            'Voter'
+        );
+
+        $generator->generateClass(
+            $voterClassDetails->getFullName(),
+            __DIR__ . '/../templates/skeleton/security/Voter.tpl.php',
+            [
+                'bounded_full_class_name' => $entityClassDetails->getFullName(),
+                'bounded_class_name' => $entityClassDetails->getShortName(),
+                'entity_full_class_name' => $entityClassDetails->getFullName(),
+                'entity_var_singular' => $entityVarSingular,
+                'role_full_class_name' => $roleClassDetails->getFullName(),
+                'role_short_class_name' => $roleClassDetails->getShortName()
+            ]
+        );
+        // END VOTER
+        // CONTROLLER
         $generator->generateController(
             $controllerClassDetails->getFullName(),
-            __DIR__.'/../templates/skeleton/crud/controller/Controller.tpl.php',
+            __DIR__ . '/../templates/skeleton/crud/controller/Controller.tpl.php',
             array_merge([
                 'entity_full_class_name' => $entityClassDetails->getFullName(),
                 'entity_class_name' => $entityClassDetails->getShortName(),
@@ -149,15 +205,18 @@ echo __DIR__.'../templates/skeleton/crud/controller/Controller.tpl.php';
                 'entity_var_singular' => $entityVarSingular,
                 'entity_twig_var_singular' => $entityTwigVarSingular,
                 'entity_identifier' => $entityDoctrineDetails->getIdentifier(),
-                'availableInterfaces' => $availableInterfaces
+                'availableInterfaces' => $availableInterfaces,
+                'voter_full_name_class' => $voterClassDetails->getFullName(),
+                'voter_short_name_class' => $voterClassDetails->getShortName()
             ],
                 $repositoryVars
             )
         );
-
+        // END CONTROLLER
+        // TYPE
         $generator->generateClass(
             $formClassDetails->getFullName(),
-            __DIR__.'/../templates/skeleton/form/Type.tpl.php',
+            __DIR__ . '/../templates/skeleton/form/Type.tpl.php',
             [
                 'bounded_full_class_name' => $entityClassDetails->getFullName(),
                 'bounded_class_name' => $entityClassDetails->getShortName(),
@@ -168,6 +227,7 @@ echo __DIR__.'../templates/skeleton/crud/controller/Controller.tpl.php';
                 'entity_twig_var_singular' => $entityTwigVarSingular,
             ]
         );
+        // END TYPE
 
         $templates = [
             'edit' => [
@@ -184,7 +244,7 @@ echo __DIR__.'../templates/skeleton/crud/controller/Controller.tpl.php';
                 'entity_identifier' => $entityDoctrineDetails->getIdentifier(),
                 'entity_fields' => $entityDoctrineDetails->getDisplayFields(),
                 'route_name' => $routeName,
-                'availableInterfaces' => $availableInterfaces,
+                'availableInterfaces' => $availableInterfaces
             ],
             'new' => [
                 'entity_class_name' => $entityClassDetails->getShortName(),
@@ -196,7 +256,7 @@ echo __DIR__.'../templates/skeleton/crud/controller/Controller.tpl.php';
         foreach ($templates as $template => $variables) {
             $generator->generateTemplate(
                 'admin/' . $templatesPath . '/' . $template . '.html.twig',
-                __DIR__.'/../templates/skeleton/crud/templates/' . $template . '.tpl.php',
+                __DIR__ . '/../templates/skeleton/crud/templates/' . $template . '.tpl.php',
                 $variables
             );
         }

@@ -90,9 +90,6 @@ if($availableInterfaces->isPosition()){
 
 {% endblock %}
 
-<?php if ($isPositionIsset): ?>
-{% block additional_javascripts %}
-    {{ parent() }}
-    {{ renderSortable("App\\\\Entity\\\\<?= $entity_class_name ?>") }}
+{% block head_js %}
+    {{ block('sortable') }}
 {% endblock %}
-<?php endif; ?>

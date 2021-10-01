@@ -10,6 +10,7 @@
         <service id="TwinElements\CrudBundle\Maker\MakeNewCrud" >
             <tag name="maker.command"/>
             <argument type="service" id="maker.doctrine_helper" />
+            <argument>%kernel.project_dir%</argument>
         </service>
 
     </services>

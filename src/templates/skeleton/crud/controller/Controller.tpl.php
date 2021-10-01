@@ -11,9 +11,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\<?= $parent_class_name ?>;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use TwinElements\AdminBundle\Role\AdminUserRole;
 use TwinElements\AdminBundle\Model\CrudControllerTrait;
 use TwinElements\AdminBundle\Service\AdminTranslator;
+use TwinElements\AdminBundle\Entity\Traits\PositionInterface;
+use <?= $voter_full_name_class; ?>;
 
 /**
  * @Route("<?= $entity_twig_var_singular ?>")
@@ -28,15 +29,22 @@ class <?= $class_name ?> extends <?= $parent_class_name; ?><?= "\n" ?>
      */
     public function index(Request $request, <?= $repository_class_name ?> $<?= $repository_var ?>, AdminTranslator $translator): Response
     {
+        $this->denyAccessUnlessGranted(<?= $voter_short_name_class; ?>::VIEW, new <?= $entity_class_name ?>());
         $<?= $entity_var_plural ?> =  $<?= $repository_var ?>->findIndexListItems($request->getLocale());
 
         $this->breadcrumbs->setItems([
             $translator->translate('<?= $entity_twig_var_singular ?>.<?= $entity_twig_var_plural ?>_list') => null
         ]);
 
-        return $this->render('admin/<?= $route_name ?>/index.html.twig', [
+        $responseParameters = [
             '<?= $entity_twig_var_plural ?>' => $<?= $entity_var_plural ?>
-        ]);
+        ];
+
+        if ((new \ReflectionClass(<?= $entity_class_name ?>::class))->implementsInterface(PositionInterface::class)) {
+            $responseParameters['sortable'] = <?= $entity_class_name ?>::class;
+        }
+
+        return $this->render('admin/<?= $route_name ?>/index.html.twig', $responseParameters);
     }
 
 
@@ -46,7 +54,7 @@ class <?= $class_name ?> extends <?= $parent_class_name; ?><?= "\n" ?>
     public function new(Request $request, AdminTranslator $translator): Response
     {
         try {
-            $this->denyAccessUnlessGranted(AdminUserRole::ROLE_ADMIN);
+            $this->denyAccessUnlessGranted(<?= $voter_short_name_class; ?>::FULL, new <?= $entity_class_name ?>());
 
             $<?= $entity_var_singular ?> = new <?= $entity_class_name ?>();
             <?php if($availableInterfaces->isTranslatable()) : ?>
@@ -103,7 +111,7 @@ class <?= $class_name ?> extends <?= $parent_class_name; ?><?= "\n" ?>
     public function edit(Request $request, <?= $entity_class_name ?> $<?= $entity_var_singular ?>, AdminTranslator $translator): Response
     {
         try {
-            $this->denyAccessUnlessGranted(AdminUserRole::ROLE_ADMIN);
+            $this->denyAccessUnlessGranted(<?= $voter_short_name_class; ?>::EDIT, new <?= $entity_class_name ?>());
 
             $form = $this->createForm(<?= $form_class_name ?>::class, $<?= $entity_var_singular ?>);
             $form->handleRequest($request);
@@ -150,7 +158,7 @@ class <?= $class_name ?> extends <?= $parent_class_name; ?><?= "\n" ?>
      */
     public function delete(Request $request, <?= $entity_class_name ?> $<?= $entity_var_singular ?>): Response
     {
-        $this->denyAccessUnlessGranted(AdminUserRole::ROLE_ADMIN);
+        $this->denyAccessUnlessGranted(<?= $voter_short_name_class; ?>::FULL, new <?= $entity_class_name ?>());
 
         $form = $this->createDeleteForm($<?= $entity_var_singular ?>);
         $form->handleRequest($request);
