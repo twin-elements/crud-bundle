@@ -12,9 +12,7 @@
     "require": {
         "php": "^7.1",
         "symfony/framework-bundle": "^4.4",
-        "twin-elements/admin-bundle": "^1.0"
-    },
-    "require-dev": {
+        "twin-elements/admin-bundle": "^1.0",
         "symfony/maker-bundle": "^1.7"
     },
     "autoload": {
