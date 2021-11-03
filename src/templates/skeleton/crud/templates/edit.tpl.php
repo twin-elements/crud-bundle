@@ -6,7 +6,7 @@
         {{ entity.title }}
     {% else %}
         {{ entity.translate(default_locale, false).title }}<br>
-        <span class="badge badge-warning small">{{ "cms.no_translation_for_this_locale"|trans({},null,admin_locale) }}</span>
+        {{ block('title_no_translation_badge') }}
     {% endif %}
 {% endblock %}
 
