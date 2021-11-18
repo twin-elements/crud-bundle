@@ -58,16 +58,15 @@ if($availableInterfaces->isPosition()){
                     <?php if ($availableInterfaces->isTitle()): ?>
                         <div class="col">
                             <div class="title">
-                                <span>{{ <?= $entity_twig_var_singular ?>.title }}</span>
-                                {% if <?= $entity_twig_var_singular ?>.title is null %}
-                                <span class="badge badge-warning">{{ "cms.no_translations"|translate_admin }}</span>
+                                {% if is_granted(constant('App\\Security\\<?= $entity_class_name ?>Voter::EDIT'), <?= $entity_twig_var_singular ?>) %}
+                                    {% set editUrl = path('<?= $route_name ?>_edit', { 'id': <?= $entity_twig_var_singular ?>.id }) %}
                                 {% endif %}
-                                <br>
-                                <div class="hidden-bar">
-                                    {% if is_granted('ROLE_ADMIN') %}
-                                    <a href="{{ path('<?= $route_name ?>_edit', { 'id': <?= $entity_twig_var_singular ?>.id }) }}">{{ "actions.edit"|translate_admin }}</a>
+                                <a {% if editUrl is defined %}href="{{ editUrl }}"{% endif %}>
+                                    <span>{{ <?= $entity_twig_var_singular ?>.title }}</span>
+                                    {% if <?= $entity_twig_var_singular ?>.title is null %}
+                                    <span class="badge badge-warning">{{ "admin.no_translation"|translate_admin }}</span>
                                     {% endif %}
-                                </div>
+                                </a>
                             </div>
                         </div>
                     <?php endif ?>
