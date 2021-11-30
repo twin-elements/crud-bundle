@@ -77,7 +77,7 @@ class <?= $class_name ?> extends <?= $parent_class_name; ?><?= "\n" ?>
 
                     $this->crudLogger->createLog($<?= $entity_var_singular ?>->getId(), $<?= $entity_var_singular ?>->getTitle());
 
-                    $this->flashes->successMessage();
+                    $this->flashes->successMessage($this->adminTranslator->translate('admin.success_operation'));;
 
                     if ('save' === $form->getClickedButton()->getName()) {
                         return $this->redirectToRoute('<?= $route_name ?>_edit', array('id' => $<?= $entity_var_singular ?>->getId()));
@@ -127,7 +127,7 @@ class <?= $class_name ?> extends <?= $parent_class_name; ?><?= "\n" ?>
                     $this->getDoctrine()->getManager()->flush();
                     $this->crudLogger->createLog($<?= $entity_var_singular ?>->getId(), $<?= $entity_var_singular ?>->getTitle());
 
-                    $this->flashes->successMessage();
+                    $this->flashes->successMessage($this->adminTranslator->translate('admin.success_operation'));;
 
 
                 if ('save' === $form->getClickedButton()->getName()) {
@@ -172,7 +172,7 @@ class <?= $class_name ?> extends <?= $parent_class_name; ?><?= "\n" ?>
                 $em->remove($<?= $entity_var_singular ?>);
                 $em->flush();
 
-                $this->flashes->successMessage();
+                $this->flashes->successMessage($this->adminTranslator->translate('admin.success_operation'));;
                 $this->crudLogger->createLog($id, $title);
 
             }catch (\Exception $exception){
