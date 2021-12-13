@@ -3,6 +3,8 @@
 namespace TwinElements\CrudBundle\Maker;
 
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
+use Doctrine\Inflector\InflectorFactory;
+use Doctrine\Inflector\Language;
 use Symfony\Bundle\MakerBundle\ConsoleStyle;
 use Symfony\Bundle\MakerBundle\DependencyBuilder;
 use Symfony\Bundle\MakerBundle\Doctrine\DoctrineHelper;
@@ -21,7 +23,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Symfony\Component\Validator\Validation;
 use Symfony\Bundle\MakerBundle\Validator;
-use Doctrine\Common\Inflector\Inflector as LegacyInflector;
+use Doctrine\Inflector\Inflector;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\Yaml\Yaml;
 
@@ -32,11 +34,16 @@ final class MakeNewCrud extends AbstractMaker
 {
     private $doctrineHelper;
     private $projectDir;
+    /**
+     * @var Inflector $inflector
+     */
+    private $inflector;
 
     public function __construct(DoctrineHelper $doctrineHelper, string $projectDir)
     {
         $this->doctrineHelper = $doctrineHelper;
         $this->projectDir = $projectDir;
+        $this->inflector = InflectorFactory::create()->build();
     }
 
     public static function getCommandName(): string
@@ -311,11 +318,11 @@ final class MakeNewCrud extends AbstractMaker
 
     private function pluralize(string $word): string
     {
-        return LegacyInflector::pluralize($word);
+        return $this->inflector->pluralize($word);
     }
 
     private function singularize(string $word): string
     {
-        return LegacyInflector::singularize($word);
+        return $this->inflector->singularize($word);
     }
 }
