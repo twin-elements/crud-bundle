@@ -85,20 +85,9 @@ $builder
 <?php endif; ?>
 
 <?php foreach ($form_fields as $form_field => $typeOptions): ?>
-    <?php if (null === $typeOptions['type'] && !$typeOptions['options_code']): ?>
-        ->add('<?= $form_field ?>', null, [
+    ->add('<?= $form_field ?>', null, [
         'label' => $this->translator->translate('<?= $entity_twig_var_singular ?>.<?= $form_field ?>')
-        ])
-    <?php elseif (null !== $typeOptions['type'] && !$typeOptions['options_code']): ?>
-        ->add('<?= $form_field ?>', <?= $typeOptions['type'] ?>::class,[
-        'label' => $this->translator->translate('<?= $entity_twig_var_singular ?>.<?= $form_field ?>')
-        ])
-    <?php else: ?>
-        ->add('<?= $form_field ?>', <?= $typeOptions['type'] ? ($typeOptions['type'] . '::class') : 'null' ?>, [
-        <?= $typeOptions['options_code'] . "\n" ?>,
-        'label' => $this->translator->translate('<?= $entity_twig_var_singular ?>.<?= $form_field ?>')
-        ])
-    <?php endif; ?>
+    ])
 <?php endforeach; ?>
 
 <?php if ($availableInterfaces->isContent()): ?>
