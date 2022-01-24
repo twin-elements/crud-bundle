@@ -33,7 +33,7 @@ class <?= $class_name ?> extends <?= $parent_class_name; ?><?= "\n" ?>
         $<?= $entity_var_plural ?> =  $<?= $repository_var ?>->findIndexListItems($request->getLocale());
 
         $this->breadcrumbs->setItems([
-            $translator->translate('<?= $entity_twig_var_singular ?>.<?= $entity_twig_var_plural ?>_list') => null
+            $translator->translate('<?= $entity_twig_var_singular ?>.<?= $entity_twig_var_plural ?>') => null
         ]);
 
         $responseParameters = [
@@ -89,7 +89,7 @@ class <?= $class_name ?> extends <?= $parent_class_name; ?><?= "\n" ?>
             }
 
             $this->breadcrumbs->setItems([
-                $translator->translate('<?= $entity_twig_var_singular ?>.<?= $entity_twig_var_plural ?>_list') => $this->generateUrl('<?= $route_name ?>_index'),
+                $translator->translate('<?= $entity_twig_var_singular ?>.<?= $entity_twig_var_plural ?>') => $this->generateUrl('<?= $route_name ?>_index'),
                 $translator->translate('<?= $entity_twig_var_singular ?>.creating_a_new_<?= $entity_twig_var_singular ?>') => null
             ]);
 
@@ -138,7 +138,7 @@ class <?= $class_name ?> extends <?= $parent_class_name; ?><?= "\n" ?>
             }
 
             $this->breadcrumbs->setItems([
-                $translator->translate('<?= $entity_twig_var_singular ?>.<?= $entity_twig_var_plural ?>_list') => $this->generateUrl('<?= $route_name ?>_index'),
+                $translator->translate('<?= $entity_twig_var_singular ?>.<?= $entity_twig_var_plural ?>') => $this->generateUrl('<?= $route_name ?>_index'),
                 $<?= $entity_var_singular ?>->getTitle() => null
             ]);
 
