@@ -18,6 +18,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Question\Question;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
@@ -32,17 +33,16 @@ use Symfony\Component\Yaml\Yaml;
  */
 final class MakeNewCrud extends AbstractMaker
 {
-    private $doctrineHelper;
-    private $projectDir;
-    /**
-     * @var Inflector $inflector
-     */
-    private $inflector;
+    private DoctrineHelper $doctrineHelper;
+    private string $projectDir;
+    private Inflector $inflector;
+    private ParameterBagInterface $parameterBag;
 
-    public function __construct(DoctrineHelper $doctrineHelper, string $projectDir)
+    public function __construct(DoctrineHelper $doctrineHelper, ParameterBagInterface $parameterBag, string $projectDir)
     {
         $this->doctrineHelper = $doctrineHelper;
         $this->projectDir = $projectDir;
+        $this->parameterBag = $parameterBag;
         $this->inflector = InflectorFactory::create()->build();
     }
 
@@ -100,7 +100,6 @@ final class MakeNewCrud extends AbstractMaker
         $entityDoctrineDetails = $this->doctrineHelper->createDoctrineDetails($entityClassDetails->getFullName());
 
         $availableInterfaces = new AvailableEntityInterfaces($entityClassDetails->getFullName(), $this->doctrineHelper);
-
         $repositoryVars = [];
 
 
@@ -181,6 +180,22 @@ final class MakeNewCrud extends AbstractMaker
             'Security\\',
             'Voter'
         );
+        // END VOTER
+
+        // create role types translations
+        // create other admin translations
+        foreach (explode('|', $this->parameterBag->get('app_locales')) as $locale) {
+            $messagesYaml = Yaml::parseFile($this->projectDir . '/translations/messages.' . $locale . '.yaml');
+            foreach (['full', 'edit', 'view'] as $aclType) {
+                $messagesYaml['role']['role_' . $entityTwigVarSingular . '_' . $aclType] = 'role_' . $entityTwigVarSingular . '_' . $aclType;
+            }
+            $messagesYaml[$entityTwigVarSingular][$entityTwigVarPlural] = $entityTwigVarPlural;
+            $messagesYaml[$entityTwigVarSingular]['creating_a_new_'.$entityTwigVarSingular] = 'creating_a_new_'.$entityTwigVarSingular;
+            foreach ($entityDoctrineDetails->getFormFields() as $formField => $fieldValue) {
+                $messagesYaml[$entityTwigVarSingular][$formField] = $formField;
+            }
+            file_put_contents($this->projectDir . '/translations/messages.' . $locale . '.yaml', Yaml::dump($messagesYaml, 4));
+        }
 
         $generator->generateClass(
             $voterClassDetails->getFullName(),
