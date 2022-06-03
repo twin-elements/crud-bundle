@@ -8,7 +8,7 @@ use TwinElements\AdminBundle\Entity\Traits\ContentInterface;
 use TwinElements\AdminBundle\Entity\Traits\EnableInterface;
 use TwinElements\AdminBundle\Entity\Traits\ImageAlbumInterface;
 use TwinElements\AdminBundle\Entity\Traits\ImageInterface;
-use TwinElements\AdminBundle\Entity\Traits\PositionInterface;
+use TwinElements\SortableBundle\Entity\PositionInterface;
 use TwinElements\FormExtensions\Type\AttachmentsType;
 use TwinElements\FormExtensions\Type\FileWithTitleType;
 use TwinElements\FormExtensions\Type\TECollectionType;

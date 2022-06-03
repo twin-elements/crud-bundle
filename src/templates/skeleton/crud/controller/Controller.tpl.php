@@ -11,9 +11,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\<?= $parent_class_name ?>;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use TwinElements\Component\ResponseParameterBuilder\ResponseParameterBuilder;
 use TwinElements\AdminBundle\Model\CrudControllerTrait;
-use TwinElements\AdminBundle\Service\AdminTranslator;
-use TwinElements\AdminBundle\Entity\Traits\PositionInterface;
+use TwinElements\SortableBundle\SortableResponseParametersPreparer;
 use <?= $voter_full_name_class; ?>;
 
 /**
@@ -27,31 +27,30 @@ class <?= $class_name ?> extends <?= $parent_class_name; ?><?= "\n" ?>
     /**
      * @Route("/", name="<?= $route_name ?>_index", methods="GET")
      */
-    public function index(Request $request, <?= $repository_class_name ?> $<?= $repository_var ?>, AdminTranslator $translator): Response
+    public function index(Request $request, <?= $repository_class_name ?> $<?= $repository_var ?>): Response
     {
         $this->denyAccessUnlessGranted(<?= $voter_short_name_class; ?>::VIEW, new <?= $entity_class_name ?>());
         $<?= $entity_var_plural ?> =  $<?= $repository_var ?>->findIndexListItems($request->getLocale());
 
         $this->breadcrumbs->setItems([
-            $translator->translate('<?= $entity_twig_var_singular ?>.<?= $entity_twig_var_plural ?>') => null
+            $this->adminTranslator->translate('<?= $entity_twig_var_singular ?>.<?= $entity_twig_var_plural ?>') => null
         ]);
 
-        $responseParameters = [
-            '<?= $entity_twig_var_plural ?>' => $<?= $entity_var_plural ?>
-        ];
 
-        if ((new \ReflectionClass(<?= $entity_class_name ?>::class))->implementsInterface(PositionInterface::class)) {
-            $responseParameters['sortable'] = <?= $entity_class_name ?>::class;
-        }
+        $responseParameters = new ResponseParameterBuilder();
+        $responseParameters
+            ->addParameter('<?= $entity_twig_var_plural ?>',$<?= $entity_var_plural ?>);
 
-        return $this->render('admin/<?= $route_name ?>/index.html.twig', $responseParameters);
+        SortableResponseParametersPreparer::prepare($responseParameters, <?= $entity_class_name ?>::class);
+
+        return $this->render('admin/<?= $route_name ?>/index.html.twig', $responseParameters->getParameters());
     }
 
 
     /**
      * @Route("/new", name="<?= $route_name ?>_new", methods="GET|POST")
      */
-    public function new(Request $request, AdminTranslator $translator): Response
+    public function new(Request $request): Response
     {
         try {
             $this->denyAccessUnlessGranted(<?= $voter_short_name_class; ?>::FULL, new <?= $entity_class_name ?>());
@@ -66,31 +65,29 @@ class <?= $class_name ?> extends <?= $parent_class_name; ?><?= "\n" ?>
 
             if ($form->isSubmitted() && $form->isValid()) {
 
+                $em = $this->getDoctrine()->getManager();
+                $em->persist($<?= $entity_var_singular ?>);
+                <?php if($availableInterfaces->isTranslatable()) : ?>
+                $<?= $entity_var_singular ?>->mergeNewTranslations();
+                <?php endif; ?>
 
-                    $em = $this->getDoctrine()->getManager();
-                    $em->persist($<?= $entity_var_singular ?>);
-                    <?php if($availableInterfaces->isTranslatable()) : ?>
-                    $<?= $entity_var_singular ?>->mergeNewTranslations();
-                    <?php endif; ?>
+                $em->flush();
 
-                    $em->flush();
+                $this->crudLogger->createLog($<?= $entity_var_singular ?>->getId(), $<?= $entity_var_singular ?>->getTitle());
 
-                    $this->crudLogger->createLog($<?= $entity_var_singular ?>->getId(), $<?= $entity_var_singular ?>->getTitle());
+                $this->flashes->successMessage($this->adminTranslator->translate('admin.success_operation'));;
 
-                    $this->flashes->successMessage($this->adminTranslator->translate('admin.success_operation'));;
-
-                    if ('save' === $form->getClickedButton()->getName()) {
-                        return $this->redirectToRoute('<?= $route_name ?>_edit', array('id' => $<?= $entity_var_singular ?>->getId()));
-                    } else {
-                        return $this->redirectToRoute('<?= $route_name ?>_index');
-                    }
-
+                if ('save' === $form->getClickedButton()->getName()) {
+                    return $this->redirectToRoute('<?= $route_name ?>_edit', array('id' => $<?= $entity_var_singular ?>->getId()));
+                } else {
+                    return $this->redirectToRoute('<?= $route_name ?>_index');
+                }
 
             }
 
             $this->breadcrumbs->setItems([
-                $translator->translate('<?= $entity_twig_var_singular ?>.<?= $entity_twig_var_plural ?>') => $this->generateUrl('<?= $route_name ?>_index'),
-                $translator->translate('<?= $entity_twig_var_singular ?>.creating_a_new_<?= $entity_twig_var_singular ?>') => null
+                $this->adminTranslator->translate('<?= $entity_twig_var_singular ?>.<?= $entity_twig_var_plural ?>') => $this->generateUrl('<?= $route_name ?>_index'),
+                $this->adminTranslator->translate('<?= $entity_twig_var_singular ?>.creating_a_new_<?= $entity_twig_var_singular ?>') => null
             ]);
 
             return $this->render('admin/<?= $route_name ?>/new.html.twig', [
@@ -108,7 +105,7 @@ class <?= $class_name ?> extends <?= $parent_class_name; ?><?= "\n" ?>
     /**
      * @Route("/{<?= $entity_identifier ?>}/edit", name="<?= $route_name ?>_edit", methods="GET|POST")
      */
-    public function edit(Request $request, <?= $entity_class_name ?> $<?= $entity_var_singular ?>, AdminTranslator $translator): Response
+    public function edit(Request $request, <?= $entity_class_name ?> $<?= $entity_var_singular ?>): Response
     {
         try {
             $this->denyAccessUnlessGranted(<?= $voter_short_name_class; ?>::EDIT, new <?= $entity_class_name ?>());
@@ -138,7 +135,7 @@ class <?= $class_name ?> extends <?= $parent_class_name; ?><?= "\n" ?>
             }
 
             $this->breadcrumbs->setItems([
-                $translator->translate('<?= $entity_twig_var_singular ?>.<?= $entity_twig_var_plural ?>') => $this->generateUrl('<?= $route_name ?>_index'),
+                $this->adminTranslator->translate('<?= $entity_twig_var_singular ?>.<?= $entity_twig_var_plural ?>') => $this->generateUrl('<?= $route_name ?>_index'),
                 $<?= $entity_var_singular ?>->getTitle() => null
             ]);
 

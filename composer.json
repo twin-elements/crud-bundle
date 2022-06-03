@@ -13,7 +13,8 @@
         "php": "^7.1",
         "symfony/framework-bundle": "^4.4 || ^5.4",
         "twin-elements/admin-bundle": "^1.6",
-        "symfony/maker-bundle": "^1.7"
+        "symfony/maker-bundle": "^1.7",
+        "twin-elements/sortable-bundle": "^1.0"
     },
     "autoload": {
         "psr-4": {

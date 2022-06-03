@@ -55,7 +55,7 @@ use TwinElements\FormExtensions\Type\SaveButtonsType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use TwinElements\AdminBundle\Service\AdminTranslator;
+use TwinElements\Component\AdminTranslator\AdminTranslator;
 <?php
 foreach ($availableInterfaces->getUsedClassList() as $key => $fullClassName) {
     echo 'use ' . $fullClassName . ';' . PHP_EOL;

@@ -1,5 +1,5 @@
 {% extends '@TwinElementsAdmin/core/list.html.twig' %}
-
+{% use '@TwinElementsSortable/blocks.html.twig' %}
 
 {% block title %}{{ "<?= $entity_twig_var_singular ?>.<?= $entity_twig_var_plural ?>"|translate_admin }}{% endblock %}
 {% block buttons %}
