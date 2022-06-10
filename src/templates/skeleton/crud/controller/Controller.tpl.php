@@ -7,6 +7,7 @@ use <?= $form_full_class_name ?>;
 <?php if (isset($repository_full_class_name)): ?>
 use <?= $repository_full_class_name ?>;
 <?php endif ?>
+use TwinElements\Component\CrudLogger\CrudLogger;
 use Symfony\Bundle\FrameworkBundle\Controller\<?= $parent_class_name ?>;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -73,7 +74,7 @@ class <?= $class_name ?> extends <?= $parent_class_name; ?><?= "\n" ?>
 
                 $em->flush();
 
-                $this->crudLogger->createLog($<?= $entity_var_singular ?>->getId(), $<?= $entity_var_singular ?>->getTitle());
+                $this->crudLogger->createLog(<?= $entity_class_name ?>::class, CrudLogger::CreateAction, $<?= $entity_var_singular ?>->getId());
 
                 $this->flashes->successMessage($this->adminTranslator->translate('admin.success_operation'));;
 
@@ -122,7 +123,7 @@ class <?= $class_name ?> extends <?= $parent_class_name; ?><?= "\n" ?>
                     <?php endif; ?>
 
                     $this->getDoctrine()->getManager()->flush();
-                    $this->crudLogger->createLog($<?= $entity_var_singular ?>->getId(), $<?= $entity_var_singular ?>->getTitle());
+                    $this->crudLogger->createLog(<?= $entity_class_name ?>::class, CrudLogger::EditAction, $<?= $entity_var_singular ?>->getId());
 
                     $this->flashes->successMessage($this->adminTranslator->translate('admin.success_operation'));;
 
@@ -163,14 +164,13 @@ class <?= $class_name ?> extends <?= $parent_class_name; ?><?= "\n" ?>
         if ($form->isSubmitted() && $form->isValid()) {
             try{
                 $id = $<?= $entity_var_singular ?>->getId();
-                $title = $<?= $entity_var_singular ?>->getTitle();
 
                 $em = $this->getDoctrine()->getManager();
                 $em->remove($<?= $entity_var_singular ?>);
                 $em->flush();
 
                 $this->flashes->successMessage($this->adminTranslator->translate('admin.success_operation'));;
-                $this->crudLogger->createLog($id, $title);
+                $this->crudLogger->createLog(<?= $entity_class_name ?>::class, CrudLogger::DeleteAction, $id);
 
             }catch (\Exception $exception){
                 $this->flashes->errorMessage($exception->getMessage());
